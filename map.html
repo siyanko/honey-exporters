@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Експортери меду - Карта українських експортерів меду</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="title" content="Експортери меду - Інтерактивна карта українських експортерів меду">
+    <meta name="referrer" content="always">
+    <meta name="description" content="Інтерактивна карта українських експортерів меду відображає розміщеня експортерів по Україні. На карті експортерів меду можна знайти контактні дані кожного експортера меду.">
+    <meta property="og:title" content="Експортери меду - Інтерактивна карта українських експортерів меду">
+    <meta property="og:description" content="Інтерактивна карта українських експортерів меду відображає розміщеня експортерів по Україні. На карті експортерів меду можна знайти контактні дані кожного експортера меду.">
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+        crossorigin="" />
+
+    <style>
+        #mapid {
+            height: 700px;
+            width: 1000px;
+        }
+    </style>
+
+    <script src="ukraine.js"></script>
+    <script src="exporters.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+        crossorigin=""></script>
+</head>
+
+<body>
+    <div id="mapid"></div>
+    <script>
+        var geojson;
+        var mymap = L.map('mapid').setView([48.8227306, 31.7839253], 6);
+
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+            maxZoom: 18,
+            // id: 'mapbox.streets',
+            id: 'mapbox.light',
+            accessToken: 'pk.eyJ1IjoiZmxva3Nmb3JrIiwiYSI6ImNqYWF4cDU2eTBycGozNHIxdTEzeWNlbGcifQ.cw9FFwgCFwQdvtjphok5iQ'
+        }).addTo(mymap);
+
+        function style(feature) {
+            return {
+                fillColor: '#FFEDA0',
+                weight: 2,
+                opacity: 1,
+                color: '#FEB24C',
+                dashArray: 4,
+                fillOpacity: 0.7
+            };
+        }
+
+        function highlightFeature(e) {
+            var layer = e.target;
+
+            layer.setStyle({
+                weight: 5,
+                color: '#FEB24C',
+                fillColor: '#FEB24C',
+                dashArray: '',
+                fillOpacity: 0.7
+            });
+
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                layer.bringToFront();
+            }
+        }
+
+        function resetHighlight(e) {
+            geojson.resetStyle(e.target);
+        }
+
+        function zoomToFeature(e) {
+            mymap.fitBounds(e.target.getBounds());
+        }
+
+        function onEachFeature(feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+        }
+
+        function pinMarkers(exporters) {
+            for (i = 0; i < exporters.length; i++) {
+                L.marker([exporters[i].lat, exporters[i].lng])
+                    .addTo(mymap)
+                    .bindPopup('<b>' + exporters[i].title + '</b><br>' + exporters[i].address);
+            }
+
+        }
+
+        pinMarkers(exporters)
+
+        geojson = L.geoJson(regionsData, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(mymap);
+    </script>
+</body>
+
+</html>
